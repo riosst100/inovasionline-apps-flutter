@@ -23,6 +23,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    buildFeatures {
+        resValues = true
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.inovasionline.twa"
@@ -36,6 +40,20 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    flavorDimensions += "env"
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationId = "com.inovasionline.twa.dev"
+            resValue("string", "app_name", "Inovasi Online (Dev)")
+        }
+        create("prod") {
+            dimension = "env"
+            applicationId = "com.inovasionline.twa"
+            resValue("string", "app_name", "Inovasi Online")
+        }
     }
 
     signingConfigs {

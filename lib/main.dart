@@ -5,14 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'config/router.dart';
 import 'config/theme.dart';
 
-Future<void> main() async {
+Future<void> bootstrap({required String envFile}) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  await dotenv.load(fileName: envFile);
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
   runApp(const ProviderScope(child: InovasiOnlineApp()));
+}
+
+Future<void> main() async {
+  await bootstrap(envFile: '.env');
 }
 
 class InovasiOnlineApp extends StatelessWidget {
