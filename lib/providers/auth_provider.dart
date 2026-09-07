@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -107,9 +109,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  Future<bool> updateProfile({required String name, required String phone}) async {
+  Future<bool> updateProfile({required String name, required String phone, File? avatar}) async {
     try {
-      final user = await _ref.read(authServiceProvider).updateProfile(name: name, phone: phone);
+      final user = await _ref.read(authServiceProvider).updateProfile(name: name, phone: phone, avatar: avatar);
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
       return true;
     } on DioException catch (e) {

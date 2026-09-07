@@ -271,16 +271,13 @@ class _HomeHeader extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 32,
-                      width: 32,
-                      fit: BoxFit.cover,
-                    ),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    height: 40,
+                    width: 40,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: InkWell(
                       onTap: () => context.push('/search'),

@@ -1,40 +1,50 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../config/theme.dart';
+import '../../core/utils/formatters.dart';
 import '../../models/chat_thread.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/core_providers.dart';
 import '../../widgets/skeleton.dart';
 import 'chat_providers.dart';
 import 'chat_thread_screen.dart';
+
+const _chatListPollInterval = Duration(seconds: 5);
 
 class _ChatListCard extends StatelessWidget {
   const _ChatListCard({
     required this.leading,
     required this.title,
     required this.subtitle,
+    this.timeLabel,
+    this.isUnread = false,
+    this.isFavorite = false,
     required this.onTap,
+    this.onLongPress,
   });
 
   final Widget leading;
   final String title;
   final String subtitle;
+  final String? timeLabel;
+  final bool isUnread;
+  final bool isFavorite;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        onLongPress: onLongPress,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(12),
-          ),
           child: Row(
             children: [
               leading,
@@ -43,18 +53,81 @@ class _ChatListCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                    Row(
+                      children: [
+                        if (isFavorite) ...[
+                          const Icon(
+                            Icons.star,
+                            size: 15,
+                            color: AppColors.accent,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        if (timeLabel != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            timeLabel!,
+                            style: TextStyle(
+                              color: isUnread
+                                  ? AppColors.primary
+                                  : AppColors.mutedForeground,
+                              fontSize: 11.5,
+                              fontWeight: isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppColors.mutedForeground, fontSize: 12.5),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isUnread
+                                  ? AppColors.foreground
+                                  : AppColors.mutedForeground,
+                              fontSize: 12.5,
+                              fontWeight: isUnread
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                        if (isUnread) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 9,
+                            height: 9,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.mutedForeground),
             ],
           ),
         ),
@@ -85,11 +158,59 @@ IconData _iconForThread(ChatThread thread) {
   return Icons.person_outline;
 }
 
-class _ChatThreadListView extends ConsumerWidget {
+String _subtitleForThread(ChatThread thread, String? currentUserId) {
+  final latest = thread.latestMessage;
+  if (latest != null) {
+    final isMine = latest.senderId != null && latest.senderId == currentUserId;
+    final senderLabel = isMine ? 'Anda' : latest.senderName;
+    final prefix = !thread.isDirectMessage && senderLabel != null
+        ? '$senderLabel: '
+        : (isMine ? 'Anda: ' : '');
+    return '$prefix${latest.body}';
+  }
+
+  return 'Belum ada pesan.';
+}
+
+class _ChatThreadListView extends ConsumerStatefulWidget {
   const _ChatThreadListView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ChatThreadListView> createState() =>
+      _ChatThreadListViewState();
+}
+
+enum _ChatFilter { all, unread, favorite }
+
+class _ChatThreadListViewState extends ConsumerState<_ChatThreadListView> {
+  Timer? _pollTimer;
+  _ChatFilter _filter = _ChatFilter.all;
+
+  @override
+  void initState() {
+    super.initState();
+    _pollTimer = Timer.periodic(
+      _chatListPollInterval,
+      (_) => ref.invalidate(chatThreadsProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  List<ChatThread> _applyFilter(List<ChatThread> threads) {
+    return switch (_filter) {
+      _ChatFilter.all => threads,
+      _ChatFilter.unread => threads.where((t) => t.isUnread).toList(),
+      _ChatFilter.favorite => threads.where((t) => t.isFavorite).toList(),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final threadsAsync = ref.watch(chatThreadsProvider);
 
     return DefaultTabController(
@@ -104,31 +225,118 @@ class _ChatThreadListView extends ConsumerWidget {
             ],
           ),
         ),
-        body: threadsAsync.when(
-          data: (threads) {
-            final groupThreads = threads.where((t) => !t.isDirectMessage).toList();
-            final dmThreads = threads.where((t) => t.isDirectMessage).toList();
-
-            return TabBarView(
-              children: [
-                _ThreadList(threads: groupThreads, emptyText: 'Belum ada grup chat.'),
-                _ThreadList(threads: dmThreads, emptyText: 'Belum ada percakapan pribadi.'),
-              ],
-            );
-          },
-          loading: () => ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: 5,
-            separatorBuilder: (_, _) => const SizedBox(height: 16),
-            itemBuilder: (_, _) => Row(
-              children: const [
-                Skeleton(width: 48, height: 48, borderRadius: 24),
-                SizedBox(width: 12),
-                Expanded(child: Skeleton(height: 14)),
-              ],
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  _FilterChip(
+                    label: 'Semua',
+                    selected: _filter == _ChatFilter.all,
+                    onTap: () => setState(() => _filter = _ChatFilter.all),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Belum dibaca',
+                    selected: _filter == _ChatFilter.unread,
+                    onTap: () => setState(() => _filter = _ChatFilter.unread),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Favorit',
+                    selected: _filter == _ChatFilter.favorite,
+                    onTap: () => setState(() => _filter = _ChatFilter.favorite),
+                  ),
+                ],
+              ),
             ),
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  final threads = threadsAsync.valueOrNull;
+                  if (threads != null) {
+                    final filtered = _applyFilter(threads);
+                    final groupThreads = filtered
+                        .where((t) => !t.isDirectMessage)
+                        .toList();
+                    final dmThreads = filtered
+                        .where((t) => t.isDirectMessage)
+                        .toList();
+
+                    return TabBarView(
+                      children: [
+                        _ThreadList(
+                          threads: groupThreads,
+                          emptyText: 'Belum ada grup chat.',
+                        ),
+                        _ThreadList(
+                          threads: dmThreads,
+                          emptyText: 'Belum ada percakapan pribadi.',
+                        ),
+                      ],
+                    );
+                  }
+
+                  if (threadsAsync.hasError) {
+                    return Center(
+                      child: Text(
+                        'Gagal memuat percakapan: ${threadsAsync.error}',
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: 5,
+                    separatorBuilder: (_, _) => const SizedBox(height: 16),
+                    itemBuilder: (_, _) => Row(
+                      children: const [
+                        Skeleton(width: 48, height: 48, borderRadius: 24),
+                        SizedBox(width: 12),
+                        Expanded(child: Skeleton(height: 14)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : AppColors.mutedForeground,
           ),
-          error: (error, _) => Center(child: Text('Gagal memuat percakapan: $error')),
         ),
       ),
     );
@@ -143,6 +351,8 @@ class _ThreadList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentUserId = ref.watch(authProvider).user?.id;
+
     return RefreshIndicator(
       onRefresh: () => ref.refresh(chatThreadsProvider.future),
       child: threads.isEmpty
@@ -153,11 +363,9 @@ class _ThreadList extends ConsumerWidget {
                 Center(child: Text(emptyText)),
               ],
             )
-          : ListView.separated(
+          : ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               itemCount: threads.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final thread = threads[index];
                 return _ChatListCard(
@@ -167,24 +375,36 @@ class _ThreadList extends ConsumerWidget {
                     backgroundImage: thread.otherUser?.avatarUrl != null
                         ? NetworkImage(thread.otherUser!.avatarUrl!)
                         : null,
-                    child: thread.otherUser?.avatarUrl == null ? Icon(_iconForThread(thread)) : null,
+                    child: thread.otherUser?.avatarUrl == null
+                        ? Icon(_iconForThread(thread))
+                        : null,
                   ),
                   title: thread.title,
-                  subtitle: switch (thread.type) {
-                    'official' => 'Informasi resmi Inovasi Online',
-                    'global' => 'Obrolan seluruh pengguna',
-                    'region' => 'Obrolan warga sekitar',
-                    _ => 'Percakapan pribadi',
-                  },
-                  onTap: () => Navigator.of(context).push(
+                  subtitle: _subtitleForThread(thread, currentUserId),
+                  timeLabel: thread.latestMessage?.createdAt != null
+                      ? formatChatListTime(thread.latestMessage!.createdAt!)
+                      : null,
+                  isUnread: thread.isUnread,
+                  isFavorite: thread.isFavorite,
+                  onTap: () => Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
                       builder: (_) => ChatThreadScreen(
                         threadId: thread.id,
                         title: thread.title,
                         canPost: !thread.isOfficial,
+                        avatarUrl: thread.otherUser?.avatarUrl,
+                        avatarIcon: _iconForThread(thread),
+                        isDirectMessage: thread.isDirectMessage,
+                        isSeller: thread.otherUser?.isSeller ?? false,
                       ),
                     ),
                   ),
+                  onLongPress: () async {
+                    await ref
+                        .read(chatServiceProvider)
+                        .toggleFavorite(thread.id);
+                    ref.invalidate(chatThreadsProvider);
+                  },
                 );
               },
             ),
@@ -209,10 +429,12 @@ class _GuestGlobalPreviewView extends ConsumerWidget {
                 foregroundColor: AppColors.primary,
                 child: Icon(Icons.public),
               ),
-              title: 'GLOBAL - Grup Chat',
+              title: 'Warga +62',
               subtitle: 'Obrolan seluruh pengguna',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const _GuestGlobalMessagesScreen()),
+              onTap: () => Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (_) => const _GuestGlobalMessagesScreen(),
+                ),
               ),
             ),
           ),
@@ -230,7 +452,10 @@ class _GuestGlobalPreviewView extends ConsumerWidget {
                   const Text(
                     'Masuk untuk mengirim pesan dan mengakses chat wilayah serta percakapan pribadi.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.mutedForeground, fontSize: 13),
+                    style: TextStyle(
+                      color: AppColors.mutedForeground,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -268,7 +493,7 @@ class _GuestGlobalMessagesScreen extends ConsumerWidget {
     final previewAsync = ref.watch(chatGlobalPreviewProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('GLOBAL - Grup Chat')),
+      appBar: AppBar(title: const Text('Warga +62')),
       body: previewAsync.when(
         data: (result) {
           final (_, messages) = result;
@@ -281,7 +506,10 @@ class _GuestGlobalMessagesScreen extends ConsumerWidget {
                 child: const Text(
                   'Masuk untuk mengirim pesan dan mengakses chat wilayah.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.mutedForeground, fontSize: 13),
+                  style: TextStyle(
+                    color: AppColors.mutedForeground,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               Expanded(
@@ -297,8 +525,13 @@ class _GuestGlobalMessagesScreen extends ConsumerWidget {
                             alignment: Alignment.centerLeft,
                             child: Container(
                               margin: const EdgeInsets.symmetric(vertical: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.sizeOf(context).width * 0.75,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.surface,
                                 borderRadius: BorderRadius.circular(14),
@@ -310,9 +543,15 @@ class _GuestGlobalMessagesScreen extends ConsumerWidget {
                                   Text(
                                     message.senderName ?? 'Pengguna',
                                     style: const TextStyle(
-                                        fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
-                                  Text(message.body, style: const TextStyle(fontSize: 14)),
+                                  Text(
+                                    message.body,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
                                 ],
                               ),
                             ),
@@ -325,7 +564,10 @@ class _GuestGlobalMessagesScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 color: AppColors.surface,
                 child: const Center(
-                  child: Text('Masuk untuk ikut mengirim pesan', style: TextStyle(color: AppColors.mutedForeground)),
+                  child: Text(
+                    'Masuk untuk ikut mengirim pesan',
+                    style: TextStyle(color: AppColors.mutedForeground),
+                  ),
                 ),
               ),
             ],

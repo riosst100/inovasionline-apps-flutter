@@ -36,15 +36,15 @@ class UserSummaryCard extends ConsumerWidget {
     final isLoggedIn = authState.status == AuthStatus.authenticated && user != null;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
       child: InkWell(
         onTap: () => context.push(isLoggedIn ? '/account' : '/login'),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,16 +52,16 @@ class UserSummaryCard extends ConsumerWidget {
               Row(
                 children: [
                   CircleAvatar(
-                    radius: 24,
+                    radius: 18,
                     backgroundColor: AppColors.surface,
                     backgroundImage: isLoggedIn && user.avatarUrl != null
                         ? CachedNetworkImageProvider(user.avatarUrl!)
                         : null,
                     child: !isLoggedIn || user.avatarUrl == null
-                        ? const Icon(Icons.person_outline, color: AppColors.mutedForeground)
+                        ? const Icon(Icons.person_outline, size: 18, color: AppColors.mutedForeground)
                         : null,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,12 +70,12 @@ class UserSummaryCard extends ConsumerWidget {
                           isLoggedIn ? user.name : 'Login / Daftar',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 4),
-                        if (isLoggedIn)
+                        if (isLoggedIn) ...[
+                          const SizedBox(height: 3),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: AppColors.accent.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
@@ -83,29 +83,25 @@ class UserSummaryCard extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.workspace_premium_outlined, size: 13, color: AppColors.accent),
+                                const Icon(Icons.workspace_premium_outlined, size: 12, color: AppColors.accent),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Member ${_dummyLoyalty.membershipLabel}',
-                                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.accent),
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accent),
                                 ),
                               ],
                             ),
-                          )
-                        else
-                          const Text(
-                            'Masuk untuk kelola akun kamu',
-                            style: TextStyle(fontSize: 12, color: AppColors.mutedForeground),
                           ),
+                        ],
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: AppColors.mutedForeground),
+                  const Icon(Icons.chevron_right, size: 20, color: AppColors.mutedForeground),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               const Divider(height: 1),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               if (isLoggedIn)
                 Row(
                   children: [
@@ -116,7 +112,7 @@ class UserSummaryCard extends ConsumerWidget {
                         value: '${_dummyLoyalty.points}',
                       ),
                     ),
-                    Container(width: 1, height: 32, color: AppColors.border),
+                    Container(width: 1, height: 28, color: AppColors.border),
                     Expanded(
                       child: _StatItem(
                         icon: Icons.confirmation_number_outlined,
@@ -129,12 +125,12 @@ class UserSummaryCard extends ConsumerWidget {
               else
                 Row(
                   children: [
-                    const Icon(Icons.card_giftcard_outlined, size: 16, color: AppColors.primary),
-                    const SizedBox(width: 8),
+                    const Icon(Icons.card_giftcard_outlined, size: 15, color: AppColors.primary),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         'Masuk untuk mendapatkan voucher dan poin',
-                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.foreground),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.foreground),
                       ),
                     ),
                   ],
@@ -159,14 +155,14 @@ class _StatItem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 18, color: AppColors.primary),
-        const SizedBox(width: 8),
+        Icon(icon, size: 16, color: AppColors.primary),
+        const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground)),
+            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontSize: 10.5, color: AppColors.mutedForeground)),
           ],
         ),
       ],

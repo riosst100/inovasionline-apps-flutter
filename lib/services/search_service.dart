@@ -31,4 +31,14 @@ class SearchService {
     final data = response.data['data'] as List<dynamic>;
     return data.map((e) => e.toString()).toList();
   }
+
+  Future<List<Product>> popular({int limit = 12}) async {
+    final response = await _apiClient.dio.get('/search/popular', queryParameters: {'limit': limit});
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => Product.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> trackClick({required String productId, required String keyword}) async {
+    await _apiClient.dio.post('/search/click', data: {'product_id': productId, 'keyword': keyword});
+  }
 }

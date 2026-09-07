@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../home/welcome_message.dart';
+import 'edit_profile_screen.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -42,6 +43,16 @@ class AccountScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
           Text(user.email, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          Center(
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+              ),
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: const Text('Edit Profil'),
+            ),
+          ),
           const SizedBox(height: 24),
           Card(
             child: ListTile(
@@ -55,6 +66,14 @@ class AccountScreen extends ConsumerWidget {
               leading: const Icon(Icons.badge_outlined),
               title: const Text('Peran'),
               subtitle: Text(user.role ?? '-'),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: const Text('Pesanan Saya'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/orders'),
             ),
           ),
           const SizedBox(height: 24),

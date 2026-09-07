@@ -10,6 +10,7 @@ class AppColors {
   static const Color destructive = Color(0xFFE60016);
   static const Color success = Color(0xFF13A147);
   static const Color surface = Color(0xFFF0F4F9);
+  static const Color chatBackground = Color(0xFFE4E9F0);
   static const Color mutedForeground = Color(0xFF5D646F);
   static const Color foreground = Color(0xFF161B24);
   static const Color border = Color(0xFFD9DEE6);

@@ -9,19 +9,10 @@ final bannersProvider = FutureProvider.autoDispose<List<AppBanner>>((ref) {
   return ref.watch(bannerServiceProvider).banners();
 });
 
-// Phase 1: homepage only surfaces Food and Beverages' sub-categories.
-// Other root categories will be added back in a later phase.
 final rootCategoriesProvider = FutureProvider.autoDispose<List<Category>>((ref) async {
   final all = await ref.watch(catalogServiceProvider).categories();
-  final foodCategory = all.firstWhere(
-    (c) => c.parentId == null && c.slug == 'foods-beverages',
-    orElse: () => throw StateError('Foods & Beverages category not found'),
-  );
 
-  return all
-      .where((c) => c.parentId == foodCategory.id)
-      .map((c) => c.icon != null && c.icon!.isNotEmpty ? c : c.copyWith(icon: foodCategory.icon))
-      .toList();
+  return all.where((c) => c.parentId == null).toList();
 });
 
 final bestSellersProvider = FutureProvider.autoDispose<List<Product>>((ref) {

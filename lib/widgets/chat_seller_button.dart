@@ -6,10 +6,11 @@ import '../providers/auth_provider.dart';
 import '../providers/core_providers.dart';
 
 class ChatSellerButton extends ConsumerStatefulWidget {
-  const ChatSellerButton({super.key, required this.sellerUserId, required this.sellerName});
+  const ChatSellerButton({super.key, required this.sellerUserId, required this.sellerName, this.iconOnly = false});
 
   final String? sellerUserId;
   final String sellerName;
+  final bool iconOnly;
 
   @override
   ConsumerState<ChatSellerButton> createState() => _ChatSellerButtonState();
@@ -66,15 +67,29 @@ class _ChatSellerButtonState extends ConsumerState<ChatSellerButton> {
 
   @override
   Widget build(BuildContext context) {
+    final icon = _loading
+        ? const SizedBox(
+            height: 16,
+            width: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+          )
+        : const Icon(Icons.chat_outlined, size: 18);
+
+    if (widget.iconOnly) {
+      return OutlinedButton(
+        onPressed: _loading ? null : _startChat,
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(48, 48),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+        ),
+        child: icon,
+      );
+    }
+
     return OutlinedButton.icon(
       onPressed: _loading ? null : _startChat,
-      icon: _loading
-          ? const SizedBox(
-              height: 16,
-              width: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-            )
-          : const Icon(Icons.chat_outlined, size: 18),
+      icon: icon,
       label: const Text('Chat Penjual'),
     );
   }

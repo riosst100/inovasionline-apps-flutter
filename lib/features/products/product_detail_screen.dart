@@ -196,8 +196,6 @@ class _ProductDetailBody extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                ChatSellerButton(sellerUserId: product.store!.ownerUserId, sellerName: product.store!.name),
                 const Divider(height: 32),
               ],
               const Text('Deskripsi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -294,16 +292,30 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
           color: Colors.white,
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
-        child: ElevatedButton.icon(
-          onPressed: _adding ? null : _handleAddToCart,
-          icon: _adding
-              ? const SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : const Icon(Icons.add_shopping_cart_outlined, size: 18),
-          label: const Text('Tambah ke Keranjang'),
+        child: Row(
+          children: [
+            if (widget.product.store != null) ...[
+              ChatSellerButton(
+                sellerUserId: widget.product.store!.ownerUserId,
+                sellerName: widget.product.store!.name,
+                iconOnly: true,
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _adding ? null : _handleAddToCart,
+                icon: _adding
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.add_shopping_cart_outlined, size: 18),
+                label: const Text('Tambah ke Keranjang'),
+              ),
+            ),
+          ],
         ),
       ),
     );

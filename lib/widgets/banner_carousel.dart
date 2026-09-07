@@ -65,7 +65,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
-          height: 170,
+          height: 150,
           child: Stack(
             children: [
               Container(color: Colors.black),

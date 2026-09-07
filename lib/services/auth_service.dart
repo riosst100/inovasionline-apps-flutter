@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import '../core/api/api_client.dart';
 import '../core/storage/token_storage.dart';
 import '../models/user.dart';
@@ -82,11 +85,14 @@ class AuthService {
     await _apiClient.dio.post('/auth/forgot-password', data: {'email': email});
   }
 
-  Future<User> updateProfile({required String name, required String phone}) async {
-    final response = await _apiClient.dio.put('/auth/user', data: {
+  Future<User> updateProfile({required String name, required String phone, File? avatar}) async {
+    final formData = FormData.fromMap({
       'name': name,
       'phone': phone,
+      if (avatar != null) 'avatar': await MultipartFile.fromFile(avatar.path),
     });
+
+    final response = await _apiClient.dio.post('/auth/user', data: formData);
     return User.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 

@@ -15,10 +15,33 @@ class CartScreen extends ConsumerStatefulWidget {
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
+  final Set<String> _selectedItemIds = {};
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(cartProvider.notifier).load());
+  }
+
+  void _toggleItem(String itemId, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedItemIds.add(itemId);
+      } else {
+        _selectedItemIds.remove(itemId);
+      }
+    });
+  }
+
+  void _toggleGroup(CartStoreGroup group, bool selected) {
+    setState(() {
+      final ids = group.items.map((item) => item.id);
+      if (selected) {
+        _selectedItemIds.addAll(ids);
+      } else {
+        _selectedItemIds.removeAll(ids);
+      }
+    });
   }
 
   @override
@@ -46,55 +69,38 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(12, 12, 12, 12 + MediaQuery.paddingOf(context).bottom + 88),
                     itemCount: cart.stores.length,
-                    itemBuilder: (context, index) => _StoreGroupCard(group: cart.stores[index]),
+                    itemBuilder: (context, index) => _StoreGroupCard(
+                      group: cart.stores[index],
+                      selectedItemIds: _selectedItemIds,
+                      onToggleItem: _toggleItem,
+                      onToggleGroup: _toggleGroup,
+                    ),
                   ),
       ),
-      bottomNavigationBar: cart != null && !cart.isEmpty
-          ? SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: AppColors.border)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Total', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
-                          Text(
-                            formatCurrency(cart.grandTotal),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: const Text('Checkout'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : null,
     );
   }
 }
 
 class _StoreGroupCard extends ConsumerWidget {
-  const _StoreGroupCard({required this.group});
+  const _StoreGroupCard({
+    required this.group,
+    required this.selectedItemIds,
+    required this.onToggleItem,
+    required this.onToggleGroup,
+  });
 
   final CartStoreGroup group;
+  final Set<String> selectedItemIds;
+  final void Function(String itemId, bool selected) onToggleItem;
+  final void Function(CartStoreGroup group, bool selected) onToggleGroup;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedItems = group.items.where((item) => selectedItemIds.contains(item.id)).toList();
+    final allSelected = selectedItems.length == group.items.length;
+    final someSelected = selectedItems.isNotEmpty;
+    final selectedSubtotal = selectedItems.fold<double>(0, (sum, item) => sum + item.lineTotal);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -104,46 +110,89 @@ class _StoreGroupCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: () => context.push('/stores/${group.store.slug}'),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: AppColors.surface,
-                    backgroundImage: group.store.logoUrl != null ? CachedNetworkImageProvider(group.store.logoUrl!) : null,
-                    child: group.store.logoUrl == null
-                        ? const Icon(Icons.storefront_outlined, size: 16, color: AppColors.foreground)
-                        : null,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      group.store.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: allSelected ? true : (someSelected ? null : false),
+                  tristate: true,
+                  onChanged: (value) => onToggleGroup(group, !allSelected),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => context.push('/stores/${group.store.slug}'),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundColor: AppColors.surface,
+                            backgroundImage:
+                                group.store.logoUrl != null ? CachedNetworkImageProvider(group.store.logoUrl!) : null,
+                            child: group.store.logoUrl == null
+                                ? const Icon(Icons.storefront_outlined, size: 16, color: AppColors.foreground)
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              group.store.name,
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, size: 18, color: AppColors.mutedForeground),
+                        ],
+                      ),
                     ),
                   ),
-                  const Icon(Icons.chevron_right, size: 18, color: AppColors.mutedForeground),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           const Divider(height: 1),
-          for (final item in group.items) _CartItemTile(item: item),
+          for (final item in group.items)
+            _CartItemTile(
+              item: item,
+              selected: selectedItemIds.contains(item.id),
+              onSelectedChanged: (selected) => onToggleItem(item.id, selected),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Subtotal: ', style: TextStyle(fontSize: 12.5, color: AppColors.mutedForeground)),
-                Text(
-                  formatCurrency(group.subtotal),
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Subtotal', style: TextStyle(fontSize: 11.5, color: AppColors.mutedForeground)),
+                    Text(
+                      formatCurrency(selectedSubtotal),
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                    ),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: someSelected
+                      ? () => context.push(
+                            '/checkout',
+                            extra: CartStoreGroup(
+                              store: group.store,
+                              items: selectedItems,
+                              subtotal: selectedSubtotal,
+                            ),
+                          )
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    minimumSize: Size.zero,
+                  ),
+                  child: const Text('Checkout toko ini', style: TextStyle(fontSize: 12.5)),
                 ),
               ],
             ),
@@ -155,17 +204,20 @@ class _StoreGroupCard extends ConsumerWidget {
 }
 
 class _CartItemTile extends ConsumerWidget {
-  const _CartItemTile({required this.item});
+  const _CartItemTile({required this.item, required this.selected, required this.onSelectedChanged});
 
   final CartItem item;
+  final bool selected;
+  final ValueChanged<bool> onSelectedChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(4, 8, 12, 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Checkbox(value: selected, onChanged: (value) => onSelectedChanged(value ?? false)),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Container(

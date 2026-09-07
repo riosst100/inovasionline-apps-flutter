@@ -6,14 +6,18 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/categories/category_products_screen.dart';
+import '../features/checkout/checkout_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/flash_sale/flash_sale_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/orders/order_detail_screen.dart';
+import '../features/orders/order_list_screen.dart';
 import '../features/posts/posts_screen.dart';
 import '../features/products/product_detail_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/shell/main_shell.dart';
 import '../features/stores/store_profile_screen.dart';
+import '../models/cart.dart';
 
 final router = GoRouter(
   initialLocation: '/',
@@ -56,6 +60,15 @@ final router = GoRouter(
     GoRoute(
       path: '/stores/:slug',
       builder: (context, state) => StoreProfileScreen(slug: state.pathParameters['slug']!),
+    ),
+    GoRoute(
+      path: '/checkout',
+      builder: (context, state) => CheckoutScreen(group: state.extra as CartStoreGroup),
+    ),
+    GoRoute(path: '/orders', builder: (context, state) => const OrderListScreen()),
+    GoRoute(
+      path: '/orders/:id',
+      builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['id']!),
     ),
   ],
 );
