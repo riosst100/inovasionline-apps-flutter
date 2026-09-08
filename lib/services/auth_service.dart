@@ -86,6 +86,11 @@ class AuthService {
   }
 
   Future<User> updateProfile({required String name, required String phone, File? avatar}) async {
+    if (avatar != null) {
+      // ignore: avoid_print
+      print('[updateProfile] avatar path=${avatar.path} exists=${await avatar.exists()} size=${await avatar.length()}');
+    }
+
     final formData = FormData.fromMap({
       'name': name,
       'phone': phone,
@@ -93,6 +98,8 @@ class AuthService {
     });
 
     final response = await _apiClient.dio.post('/auth/user', data: formData);
+    // ignore: avoid_print
+    print('[updateProfile] response=${response.data}');
     return User.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 
