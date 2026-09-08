@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/password_field.dart';
 import '../home/welcome_message.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -121,9 +122,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     validator: (value) => (value == null || value.isEmpty) ? 'Email wajib diisi' : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  PasswordField(
                     controller: _passwordController,
-                    obscureText: true,
                     decoration: const InputDecoration(labelText: 'Kata Sandi'),
                     validator: (value) => (value == null || value.isEmpty) ? 'Kata sandi wajib diisi' : null,
                   ),

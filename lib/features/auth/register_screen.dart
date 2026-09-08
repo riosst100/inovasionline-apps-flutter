@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/address_picker.dart';
+import '../../widgets/password_field.dart';
 import '../home/welcome_message.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -137,9 +138,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   validator: (value) => (value == null || value.isEmpty) ? 'Nomor telepon wajib diisi' : null,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                PasswordField(
                   controller: _passwordController,
-                  obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Kata Sandi',
                     helperText: 'Minimal 8 karakter, kombinasi huruf besar, kecil, dan angka',
@@ -154,9 +154,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                PasswordField(
                   controller: _passwordConfirmController,
-                  obscureText: true,
                   decoration: const InputDecoration(labelText: 'Konfirmasi Kata Sandi'),
                   validator: (value) =>
                       value != _passwordController.text ? 'Konfirmasi kata sandi tidak cocok' : null,

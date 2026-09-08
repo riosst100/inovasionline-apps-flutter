@@ -19,4 +19,11 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+    <!-- Used by com.yalantis.ucrop.UCropActivity (image_cropper plugin). Adds
+         system-bar insets so the toolbar and bottom controls aren't drawn
+         under the status bar / navigation bar on edge-to-edge devices. -->
+    <style name="UCropTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
 </resources>

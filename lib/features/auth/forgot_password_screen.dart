@@ -34,7 +34,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       await ref.read(authServiceProvider).forgotPassword(_emailController.text.trim());
       setState(() {
         _success = true;
-        _message = 'Tautan reset kata sandi telah dikirim ke email Anda.';
+        _message =
+            'Tautan reset kata sandi telah dikirim ke email Anda. Buka email tersebut dan ikuti tautannya untuk membuat kata sandi baru.';
       });
     } catch (_) {
       setState(() {
