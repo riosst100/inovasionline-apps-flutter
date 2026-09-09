@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 import '../config/env.dart';
 import '../core/api/api_exception.dart';
 import '../models/user.dart';
@@ -17,7 +18,8 @@ class AuthState {
   final User? user;
   final String? error;
 
-  AuthState copyWith({AuthStatus? status, User? user, String? error}) => AuthState(
+  AuthState copyWith({AuthStatus? status, User? user, String? error}) =>
+      AuthState(
         status: status ?? this.status,
         user: user ?? this.user,
         error: error,
@@ -34,15 +36,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _restore() async {
     try {
       final user = await _ref.read(authServiceProvider).currentUser();
-      state = AuthState(status: user != null ? AuthStatus.authenticated : AuthStatus.unauthenticated, user: user);
+      state = AuthState(
+        status: user != null
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated,
+        user: user,
+      );
     } on DioException {
       state = const AuthState(status: AuthStatus.unauthenticated);
     }
   }
 
-  Future<bool> login({required String email, required String password}) async {
+  /// [login] accepts either an email address or a phone number.
+  Future<bool> login({required String login, required String password}) async {
     try {
-      final user = await _ref.read(authServiceProvider).login(email: email, password: password);
+      final user = await _ref
+          .read(authServiceProvider)
+          .login(login: login, password: password);
       state = AuthState(status: AuthStatus.authenticated, user: user);
       return true;
     } on DioException catch (e) {
@@ -51,28 +61,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// The phone number must already be verified via [sendPhoneOtp] +
+  /// [verifyPhoneOtp] before calling this.
   Future<bool> register({
     required String name,
-    required String email,
     required String phone,
+    required String gender,
+    required String dateOfBirth,
     required String password,
     required String passwordConfirmation,
-    required String provinceCode,
-    required String cityCode,
-    required String districtCode,
-    required String villageCode,
   }) async {
     try {
-      final user = await _ref.read(authServiceProvider).register(
+      final user = await _ref
+          .read(authServiceProvider)
+          .register(
             name: name,
-            email: email,
             phone: phone,
+            gender: gender,
+            dateOfBirth: dateOfBirth,
             password: password,
             passwordConfirmation: passwordConfirmation,
-            provinceCode: provinceCode,
-            cityCode: cityCode,
-            districtCode: districtCode,
-            villageCode: villageCode,
           );
       state = AuthState(status: AuthStatus.authenticated, user: user);
       return true;
@@ -82,9 +90,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> sendPhoneOtp(String phone) async {
+    try {
+      await _ref.read(authServiceProvider).sendPhoneOtp(phone);
+      return true;
+    } on DioException catch (e) {
+      state = state.copyWith(error: _errorMessage(e));
+      return false;
+    }
+  }
+
+  Future<bool> verifyPhoneOtp({
+    required String phone,
+    required String code,
+  }) async {
+    try {
+      await _ref
+          .read(authServiceProvider)
+          .verifyPhoneOtp(phone: phone, code: code);
+      return true;
+    } on DioException catch (e) {
+      state = state.copyWith(error: _errorMessage(e));
+      return false;
+    }
+  }
+
   Future<bool> loginWithGoogle() async {
     try {
-      final googleSignIn = GoogleSignIn(serverClientId: Env.googleServerClientId);
+      final googleSignIn = GoogleSignIn(
+        serverClientId: Env.googleServerClientId,
+      );
       final account = await googleSignIn.signIn();
       if (account == null) return false;
 
@@ -95,7 +130,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
 
-      final user = await _ref.read(authServiceProvider).loginWithGoogle(idToken);
+      final user = await _ref
+          .read(authServiceProvider)
+          .loginWithGoogle(idToken);
       state = AuthState(status: AuthStatus.authenticated, user: user);
       return true;
     } on DioException catch (e) {
@@ -109,9 +146,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  Future<bool> updateProfile({required String name, required String phone, File? avatar}) async {
+  Future<bool> updateProfile({
+    required String name,
+    required String phone,
+    File? avatar,
+  }) async {
     try {
-      final user = await _ref.read(authServiceProvider).updateProfile(name: name, phone: phone, avatar: avatar);
+      final user = await _ref
+          .read(authServiceProvider)
+          .updateProfile(name: name, phone: phone, avatar: avatar);
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
       return true;
     } on DioException catch (e) {
@@ -127,7 +170,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String villageCode,
   }) async {
     try {
-      final user = await _ref.read(authServiceProvider).updateAddress(
+      final user = await _ref
+          .read(authServiceProvider)
+          .updateAddress(
             provinceCode: provinceCode,
             cityCode: cityCode,
             districtCode: districtCode,
@@ -147,7 +192,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final fieldErrors = error.errors;
       if (fieldErrors != null && fieldErrors.isNotEmpty) {
         final messages = fieldErrors.values
-            .expand((v) => v is List ? v.map((e) => e.toString()) : [v.toString()])
+            .expand(
+              (v) => v is List ? v.map((e) => e.toString()) : [v.toString()],
+            )
             .toList();
         if (messages.isNotEmpty) return messages.join('\n');
       }
@@ -157,4 +204,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier(ref));
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
+  (ref) => AuthNotifier(ref),
+);

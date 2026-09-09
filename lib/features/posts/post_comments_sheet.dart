@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../config/theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/post.dart';
@@ -39,7 +40,9 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final result = await ref.read(postServiceProvider).comments(widget.postId);
+      final result = await ref
+          .read(postServiceProvider)
+          .comments(widget.postId);
       if (mounted) {
         setState(() {
           _comments
@@ -57,7 +60,7 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
     final isAuthed = ref.read(authProvider).status == AuthStatus.authenticated;
     if (!isAuthed) {
       Navigator.of(context).pop();
-      context.push('/login');
+      context.push('/account/login');
       return;
     }
 
@@ -66,7 +69,9 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
 
     setState(() => _sending = true);
     try {
-      final comment = await ref.read(postServiceProvider).addComment(widget.postId, body);
+      final comment = await ref
+          .read(postServiceProvider)
+          .addComment(widget.postId, body);
       if (!mounted) return;
       setState(() {
         _comments.insert(0, comment);
@@ -91,22 +96,29 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('Komentar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              child: Text(
+                'Komentar',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
             ),
             const Divider(height: 1),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _comments.isEmpty
-                      ? const Center(
-                          child: Text('Belum ada komentar.', style: TextStyle(color: AppColors.mutedForeground)),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _comments.length,
-                          itemBuilder: (context, index) => _CommentTile(comment: _comments[index]),
-                        ),
+                  ? const Center(
+                      child: Text(
+                        'Belum ada komentar.',
+                        style: TextStyle(color: AppColors.mutedForeground),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _comments.length,
+                      itemBuilder: (context, index) =>
+                          _CommentTile(comment: _comments[index]),
+                    ),
             ),
             const Divider(height: 1),
             Padding(
@@ -122,7 +134,10 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                         hintText: 'Tulis komentar...',
                         filled: true,
                         fillColor: AppColors.surface,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -137,7 +152,10 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                         ? const SizedBox(
                             height: 16,
                             width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Icon(Icons.send),
                   ),
@@ -166,9 +184,15 @@ class _CommentTile extends StatelessWidget {
           CircleAvatar(
             radius: 16,
             backgroundColor: AppColors.surface,
-            backgroundImage: comment.userAvatarUrl != null ? CachedNetworkImageProvider(comment.userAvatarUrl!) : null,
+            backgroundImage: comment.userAvatarUrl != null
+                ? CachedNetworkImageProvider(comment.userAvatarUrl!)
+                : null,
             child: comment.userAvatarUrl == null
-                ? const Icon(Icons.person_outline, size: 16, color: AppColors.mutedForeground)
+                ? const Icon(
+                    Icons.person_outline,
+                    size: 16,
+                    color: AppColors.mutedForeground,
+                  )
                 : null,
           ),
           const SizedBox(width: 10),
@@ -183,14 +207,23 @@ class _CommentTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(comment.userName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5)),
+                  Text(
+                    comment.userName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12.5,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(comment.body, style: const TextStyle(fontSize: 13.5)),
                   if (comment.createdAt != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       formatRelativeTime(comment.createdAt!),
-                      style: const TextStyle(fontSize: 10.5, color: AppColors.mutedForeground),
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: AppColors.mutedForeground,
+                      ),
                     ),
                   ],
                 ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
+
 import '../../config/theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/post.dart';
@@ -36,16 +37,24 @@ class _PostComposer extends ConsumerWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: AppColors.background,
-                  backgroundImage: user?.avatarUrl != null ? CachedNetworkImageProvider(user!.avatarUrl!) : null,
+                  backgroundImage: user?.avatarUrl != null
+                      ? CachedNetworkImageProvider(user!.avatarUrl!)
+                      : null,
                   child: user?.avatarUrl == null
-                      ? const Icon(Icons.person_outline, color: AppColors.mutedForeground)
+                      ? const Icon(
+                          Icons.person_outline,
+                          color: AppColors.mutedForeground,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Apa yang Anda pikirkan?',
-                    style: const TextStyle(color: AppColors.mutedForeground, fontSize: 14),
+                    style: const TextStyle(
+                      color: AppColors.mutedForeground,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -82,7 +91,8 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 300) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
       ref.read(feedProvider.notifier).loadMore();
     }
   }
@@ -90,10 +100,11 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
   Future<void> _openCreatePost() async {
     final isAuthed = ref.read(authProvider).status == AuthStatus.authenticated;
     if (!isAuthed) {
-      context.push('/login');
+      context.push('/account/login');
       return;
     }
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CreatePostScreen()));
+    await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const CreatePostScreen()));
   }
 
   @override
@@ -107,36 +118,46 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
         child: feedState.loading && feedState.posts.isEmpty
             ? const _FeedSkeleton()
             : feedState.posts.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: [
-                      _PostComposer(onTap: _openCreatePost),
-                      const SizedBox(height: 120),
-                      const Icon(Icons.dynamic_feed_outlined, size: 56, color: AppColors.mutedForeground),
-                      const SizedBox(height: 12),
-                      const Center(child: Text('Belum ada postingan', style: TextStyle(color: AppColors.mutedForeground))),
-                    ],
-                  )
-                : ListView.separated(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: feedState.posts.length + 1 + (feedState.hasMore ? 1 : 0),
-                    separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return _PostComposer(onTap: _openCreatePost);
-                      }
-                      final postIndex = index - 1;
-                      if (postIndex >= feedState.posts.length) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      return _PostCard(post: feedState.posts[postIndex]);
-                    },
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  _PostComposer(onTap: _openCreatePost),
+                  const SizedBox(height: 120),
+                  const Icon(
+                    Icons.dynamic_feed_outlined,
+                    size: 56,
+                    color: AppColors.mutedForeground,
                   ),
+                  const SizedBox(height: 12),
+                  const Center(
+                    child: Text(
+                      'Belum ada postingan',
+                      style: TextStyle(color: AppColors.mutedForeground),
+                    ),
+                  ),
+                ],
+              )
+            : ListView.separated(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount:
+                    feedState.posts.length + 1 + (feedState.hasMore ? 1 : 0),
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _PostComposer(onTap: _openCreatePost);
+                  }
+                  final postIndex = index - 1;
+                  if (postIndex >= feedState.posts.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  return _PostCard(post: feedState.posts[postIndex]);
+                },
+              ),
       ),
     );
   }
@@ -186,14 +207,23 @@ class _PostCard extends ConsumerWidget {
   final Post post;
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Hapus Postingan'),
-            content: const Text('Apakah Anda yakin ingin menghapus postingan ini?'),
+            content: const Text(
+              'Apakah Anda yakin ingin menghapus postingan ini?',
+            ),
             actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Batal')),
-              TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Hapus')),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Batal'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Hapus'),
+              ),
             ],
           ),
         ) ??
@@ -207,13 +237,16 @@ class _PostCard extends ConsumerWidget {
   Future<void> _share(BuildContext context, WidgetRef ref) async {
     final isAuthed = ref.read(authProvider).status == AuthStatus.authenticated;
     if (!isAuthed) {
-      context.push('/login');
+      context.push('/account/login');
       return;
     }
     await ref.read(feedProvider.notifier).sharePost(post.id);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Postingan dibagikan.'), behavior: SnackBarBehavior.floating),
+        const SnackBar(
+          content: Text('Postingan dibagikan.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -221,7 +254,7 @@ class _PostCard extends ConsumerWidget {
   Future<void> _toggleLike(BuildContext context, WidgetRef ref) async {
     final isAuthed = ref.read(authProvider).status == AuthStatus.authenticated;
     if (!isAuthed) {
-      context.push('/login');
+      context.push('/account/login');
       return;
     }
     await ref.read(feedProvider.notifier).toggleLike(post.id);
@@ -247,9 +280,14 @@ class _PostCard extends ConsumerWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: AppColors.surface,
-                backgroundImage: post.userAvatarUrl != null ? CachedNetworkImageProvider(post.userAvatarUrl!) : null,
+                backgroundImage: post.userAvatarUrl != null
+                    ? CachedNetworkImageProvider(post.userAvatarUrl!)
+                    : null,
                 child: post.userAvatarUrl == null
-                    ? const Icon(Icons.person_outline, color: AppColors.mutedForeground)
+                    ? const Icon(
+                        Icons.person_outline,
+                        color: AppColors.mutedForeground,
+                      )
                     : null,
               ),
               const SizedBox(width: 10),
@@ -257,18 +295,30 @@ class _PostCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(post.userName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(
+                      post.userName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     if (post.createdAt != null)
                       Text(
                         formatRelativeTime(post.createdAt!),
-                        style: const TextStyle(fontSize: 11.5, color: AppColors.mutedForeground),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.mutedForeground,
+                        ),
                       ),
                   ],
                 ),
               ),
               if (post.isMine)
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_horiz, color: AppColors.mutedForeground),
+                  icon: const Icon(
+                    Icons.more_horiz,
+                    color: AppColors.mutedForeground,
+                  ),
                   onSelected: (value) {
                     if (value == 'delete') _confirmDelete(context, ref);
                   },
@@ -300,7 +350,9 @@ class _PostCard extends ConsumerWidget {
               _ActionButton(
                 icon: post.isLiked ? Icons.favorite : Icons.favorite_outline,
                 label: '${post.likeCount}',
-                color: post.isLiked ? AppColors.destructive : AppColors.mutedForeground,
+                color: post.isLiked
+                    ? AppColors.destructive
+                    : AppColors.mutedForeground,
                 onTap: () => _toggleLike(context, ref),
               ),
               const SizedBox(width: 20),
@@ -326,7 +378,12 @@ class _PostCard extends ConsumerWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.icon, required this.label, required this.color, required this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String label;
@@ -344,7 +401,14 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 19, color: color),
             const SizedBox(width: 5),
-            Text(label, style: TextStyle(fontSize: 12.5, color: color, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -368,7 +432,10 @@ class _PostMediaGrid extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: 1.3,
-          child: CachedNetworkImage(imageUrl: media.first.url, fit: BoxFit.cover),
+          child: CachedNetworkImage(
+            imageUrl: media.first.url,
+            fit: BoxFit.cover,
+          ),
         ),
       );
     }
@@ -397,7 +464,11 @@ class _PostMediaGrid extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     '+${media.length - 4}',
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
             ],
@@ -429,7 +500,9 @@ class _PostVideoPlayerState extends State<_PostVideoPlayer> {
 
   Future<void> _play() async {
     setState(() => _loading = true);
-    final controller = VideoPlayerController.networkUrl(Uri.parse(widget.media.url));
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.media.url),
+    );
     try {
       await controller.initialize();
       if (!mounted) {
@@ -464,7 +537,10 @@ class _PostVideoPlayerState extends State<_PostVideoPlayer> {
             if (ready)
               VideoPlayer(controller)
             else if (widget.media.thumbnailUrl != null)
-              CachedNetworkImage(imageUrl: widget.media.thumbnailUrl!, fit: BoxFit.cover)
+              CachedNetworkImage(
+                imageUrl: widget.media.thumbnailUrl!,
+                fit: BoxFit.cover,
+              )
             else
               Container(color: AppColors.surface),
             if (!ready)
@@ -475,7 +551,11 @@ class _PostVideoPlayerState extends State<_PostVideoPlayer> {
                   child: Center(
                     child: _loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Icon(Icons.play_circle_fill, color: Colors.white, size: 56),
+                        : const Icon(
+                            Icons.play_circle_fill,
+                            color: Colors.white,
+                            size: 56,
+                          ),
                   ),
                 ),
               ),
@@ -483,7 +563,9 @@ class _PostVideoPlayerState extends State<_PostVideoPlayer> {
               Positioned.fill(
                 child: InkWell(
                   onTap: () => setState(() {
-                    controller.value.isPlaying ? controller.pause() : controller.play();
+                    controller.value.isPlaying
+                        ? controller.pause()
+                        : controller.play();
                   }),
                 ),
               ),
@@ -527,8 +609,14 @@ class _PostProductTags extends StatelessWidget {
                       width: 60,
                       height: 60,
                       child: product.imageUrl != null
-                          ? CachedNetworkImage(imageUrl: product.imageUrl!, fit: BoxFit.cover)
-                          : Container(color: AppColors.surface, child: const Icon(Icons.image_outlined, size: 20)),
+                          ? CachedNetworkImage(
+                              imageUrl: product.imageUrl!,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              color: AppColors.surface,
+                              child: const Icon(Icons.image_outlined, size: 20),
+                            ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -541,12 +629,19 @@ class _PostProductTags extends StatelessWidget {
                           product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           formatCurrency(product.displayPrice),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
@@ -582,13 +677,25 @@ class _SharedPostPreview extends StatelessWidget {
               CircleAvatar(
                 radius: 14,
                 backgroundColor: AppColors.surface,
-                backgroundImage: post.userAvatarUrl != null ? CachedNetworkImageProvider(post.userAvatarUrl!) : null,
+                backgroundImage: post.userAvatarUrl != null
+                    ? CachedNetworkImageProvider(post.userAvatarUrl!)
+                    : null,
                 child: post.userAvatarUrl == null
-                    ? const Icon(Icons.person_outline, size: 14, color: AppColors.mutedForeground)
+                    ? const Icon(
+                        Icons.person_outline,
+                        size: 14,
+                        color: AppColors.mutedForeground,
+                      )
                     : null,
               ),
               const SizedBox(width: 8),
-              Text(post.userName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5)),
+              Text(
+                post.userName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12.5,
+                ),
+              ),
             ],
           ),
           if (post.body != null && post.body!.isNotEmpty) ...[
@@ -601,7 +708,10 @@ class _SharedPostPreview extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: AspectRatio(
                 aspectRatio: 1.5,
-                child: CachedNetworkImage(imageUrl: post.media.first.url, fit: BoxFit.cover),
+                child: CachedNetworkImage(
+                  imageUrl: post.media.first.url,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ],
