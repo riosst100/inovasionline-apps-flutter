@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import '../config/env.dart';
 import '../core/api/api_exception.dart';
 import '../models/user.dart';
@@ -54,6 +56,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .read(authServiceProvider)
           .login(login: login, password: password);
       state = AuthState(status: AuthStatus.authenticated, user: user);
+      await _syncDeviceToken();
       return true;
     } on DioException catch (e) {
       state = state.copyWith(error: _errorMessage(e));
@@ -83,6 +86,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             passwordConfirmation: passwordConfirmation,
           );
       state = AuthState(status: AuthStatus.authenticated, user: user);
+      await _syncDeviceToken();
       return true;
     } on DioException catch (e) {
       state = state.copyWith(error: _errorMessage(e));
@@ -134,6 +138,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .read(authServiceProvider)
           .loginWithGoogle(idToken);
       state = AuthState(status: AuthStatus.authenticated, user: user);
+      await _syncDeviceToken();
       return true;
     } on DioException catch (e) {
       state = state.copyWith(error: _errorMessage(e));
@@ -142,8 +147,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _ref.read(notificationServiceProvider).unregisterToken(token);
+      }
+    } catch (_) {
+      // Best-effort: an unreachable backend shouldn't block logout.
+    }
     await _ref.read(authServiceProvider).logout();
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<void> _syncDeviceToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _ref.read(notificationServiceProvider).registerToken(token);
+      }
+    } catch (_) {
+      // Best-effort: notification registration shouldn't block login.
+    }
   }
 
   Future<bool> updateProfile({

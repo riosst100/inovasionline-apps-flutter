@@ -9,6 +9,7 @@ import '../services/cart_service.dart';
 import '../services/catalog_service.dart';
 import '../services/checkout_service.dart';
 import '../services/chat_service.dart';
+import '../services/notification_service.dart';
 import '../services/order_service.dart';
 import '../services/post_service.dart';
 import '../services/region_service.dart';
@@ -70,4 +71,8 @@ final postServiceProvider = Provider<PostService>(
 
 final appUpdateServiceProvider = Provider<AppUpdateService>(
   (ref) => AppUpdateService(ref.watch(apiClientProvider)),
+);
+
+final notificationServiceProvider = Provider<NotificationService>(
+  (ref) => NotificationService(ref.watch(apiClientProvider)),
 );
