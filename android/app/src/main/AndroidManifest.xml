@@ -25,6 +25,18 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- App Links: opens inovasionline.com links directly in the app.
+                 autoVerify requires a matching public/.well-known/assetlinks.json
+                 to be served over HTTPS at the domain root. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="inovasionline.com" android:pathPrefix="/products"/>
+                <data android:scheme="https" android:host="inovasionline.com" android:pathPrefix="/categories"/>
+                <data android:scheme="https" android:host="www.inovasionline.com" android:pathPrefix="/products"/>
+                <data android:scheme="https" android:host="www.inovasionline.com" android:pathPrefix="/categories"/>
+            </intent-filter>
         </activity>
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
