@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../config/theme.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
@@ -33,12 +34,13 @@ class UserSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
-    final isLoggedIn = authState.status == AuthStatus.authenticated && user != null;
+    final isLoggedIn =
+        authState.status == AuthStatus.authenticated && user != null;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
       child: InkWell(
-        onTap: () => context.push(isLoggedIn ? '/account' : '/login'),
+        onTap: () => context.push(isLoggedIn ? '/account' : '/account/login'),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(10),
@@ -58,7 +60,11 @@ class UserSummaryCard extends ConsumerWidget {
                         ? CachedNetworkImageProvider(user.avatarUrl!)
                         : null,
                     child: !isLoggedIn || user.avatarUrl == null
-                        ? const Icon(Icons.person_outline, size: 18, color: AppColors.mutedForeground)
+                        ? const Icon(
+                            Icons.person_outline,
+                            size: 18,
+                            color: AppColors.mutedForeground,
+                          )
                         : null,
                   ),
                   const SizedBox(width: 10),
@@ -70,12 +76,18 @@ class UserSummaryCard extends ConsumerWidget {
                           isLoggedIn ? user.name : 'Login / Daftar',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         if (isLoggedIn) ...[
                           const SizedBox(height: 3),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 1.5,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.accent.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
@@ -83,11 +95,19 @@ class UserSummaryCard extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.workspace_premium_outlined, size: 12, color: AppColors.accent),
+                                const Icon(
+                                  Icons.workspace_premium_outlined,
+                                  size: 12,
+                                  color: AppColors.accent,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Member ${_dummyLoyalty.membershipLabel}',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accent),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.accent,
+                                  ),
                                 ),
                               ],
                             ),
@@ -96,7 +116,11 @@ class UserSummaryCard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, size: 20, color: AppColors.mutedForeground),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: AppColors.mutedForeground,
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -125,12 +149,20 @@ class UserSummaryCard extends ConsumerWidget {
               else
                 Row(
                   children: [
-                    const Icon(Icons.card_giftcard_outlined, size: 15, color: AppColors.primary),
+                    const Icon(
+                      Icons.card_giftcard_outlined,
+                      size: 15,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         'Masuk untuk mendapatkan voucher dan poin',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.foreground),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.foreground,
+                        ),
                       ),
                     ),
                   ],
@@ -144,7 +176,11 @@ class UserSummaryCard extends ConsumerWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  const _StatItem({required this.icon, required this.label, required this.value});
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   final IconData icon;
   final String label;
@@ -161,8 +197,17 @@ class _StatItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 10.5, color: AppColors.mutedForeground)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10.5,
+                color: AppColors.mutedForeground,
+              ),
+            ),
           ],
         ),
       ],

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../config/theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../models/product.dart';
@@ -11,9 +12,10 @@ import '../../widgets/chat_seller_button.dart';
 import '../../widgets/skeleton.dart';
 import '../cart/cart_providers.dart';
 
-final productDetailProvider = FutureProvider.autoDispose.family<ProductDetail, String>((ref, slug) {
-  return ref.watch(catalogServiceProvider).product(slug);
-});
+final productDetailProvider = FutureProvider.autoDispose
+    .family<ProductDetail, String>((ref, slug) {
+      return ref.watch(catalogServiceProvider).product(slug);
+    });
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key, required this.slug});
@@ -21,18 +23,23 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   final String slug;
 
   @override
-  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with SingleTickerProviderStateMixin {
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _cartBeatController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 300),
   );
-  late final Animation<double> _cartBeatScale = TweenSequence<double>([
-    TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 50),
-    TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 50),
-  ]).animate(CurvedAnimation(parent: _cartBeatController, curve: Curves.easeOut));
+  late final Animation<double> _cartBeatScale =
+      TweenSequence<double>([
+        TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 50),
+        TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 50),
+      ]).animate(
+        CurvedAnimation(parent: _cartBeatController, curve: Curves.easeOut),
+      );
 
   @override
   void dispose() {
@@ -68,14 +75,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
       ),
       body: productAsync.when(
         data: (product) => RefreshIndicator(
-          onRefresh: () => ref.refresh(productDetailProvider(widget.slug).future),
+          onRefresh: () =>
+              ref.refresh(productDetailProvider(widget.slug).future),
           child: _ProductDetailBody(product: product),
         ),
         loading: () => const _ProductDetailSkeleton(),
         error: (error, _) => Center(child: Text('Gagal memuat produk: $error')),
       ),
       bottomNavigationBar: productAsync.maybeWhen(
-        data: (product) => _AddToCartBar(product: product, onAdded: _onAddedToCart),
+        data: (product) =>
+            _AddToCartBar(product: product, onAdded: _onAddedToCart),
         orElse: () => null,
       ),
     );
@@ -89,7 +98,10 @@ class _ProductDetailSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const AspectRatio(aspectRatio: 1, child: Skeleton(borderRadius: 0, width: double.infinity)),
+        const AspectRatio(
+          aspectRatio: 1,
+          child: Skeleton(borderRadius: 0, width: double.infinity),
+        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -127,10 +139,22 @@ class _ProductDetailBody extends StatelessWidget {
         AspectRatio(
           aspectRatio: 1,
           child: images.isEmpty
-              ? Container(color: AppColors.surface, child: const Icon(Icons.image_outlined, size: 64, color: AppColors.mutedForeground))
+              ? Container(
+                  color: AppColors.surface,
+                  child: const Icon(
+                    Icons.image_outlined,
+                    size: 64,
+                    color: AppColors.mutedForeground,
+                  ),
+                )
               : PageView(
                   children: images
-                      .map((img) => CachedNetworkImage(imageUrl: img.url, fit: BoxFit.cover))
+                      .map(
+                        (img) => CachedNetworkImage(
+                          imageUrl: img.url,
+                          fit: BoxFit.cover,
+                        ),
+                      )
                       .toList(),
                 ),
         ),
@@ -139,37 +163,59 @@ class _ProductDetailBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(product.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                product.name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Text(
                     formatCurrency(product.displayPrice),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
                   if (product.hasDiscount) ...[
                     const SizedBox(width: 8),
                     Text(
                       formatCurrency(product.regularPrice),
-                      style: const TextStyle(color: AppColors.mutedForeground, decoration: TextDecoration.lineThrough),
+                      style: const TextStyle(
+                        color: AppColors.mutedForeground,
+                        decoration: TextDecoration.lineThrough,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.error,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         '-${product.discountPercent}%',
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
                 ],
               ),
               const SizedBox(height: 4),
-              Text('${product.soldCount} terjual · Stok ${product.stock}', style: const TextStyle(color: AppColors.mutedForeground)),
+              Text(
+                '${product.soldCount} terjual · Stok ${product.stock}',
+                style: const TextStyle(color: AppColors.mutedForeground),
+              ),
               const Divider(height: 32),
               if (product.store != null) ...[
                 InkWell(
@@ -178,29 +224,56 @@ class _ProductDetailBody extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         backgroundColor: AppColors.surface,
-                        backgroundImage: product.store!.logoUrl != null ? CachedNetworkImageProvider(product.store!.logoUrl!) : null,
-                        child: product.store!.logoUrl == null ? const Icon(Icons.storefront_outlined) : null,
+                        backgroundImage: product.store!.logoUrl != null
+                            ? CachedNetworkImageProvider(
+                                product.store!.logoUrl!,
+                              )
+                            : null,
+                        child: product.store!.logoUrl == null
+                            ? const Icon(Icons.storefront_outlined)
+                            : null,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(product.store!.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Text(
+                              product.store!.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             if (product.store!.city != null)
-                              Text(product.store!.city!, style: const TextStyle(color: AppColors.mutedForeground, fontSize: 12)),
+                              Text(
+                                product.store!.city!,
+                                style: const TextStyle(
+                                  color: AppColors.mutedForeground,
+                                  fontSize: 12,
+                                ),
+                              ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right, color: AppColors.mutedForeground),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.mutedForeground,
+                      ),
                     ],
                   ),
                 ),
                 const Divider(height: 32),
               ],
-              const Text('Deskripsi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text(
+                'Deskripsi',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 8),
-              Text(product.description ?? product.shortDescription ?? 'Tidak ada deskripsi.'),
+              Text(
+                product.description ??
+                    product.shortDescription ??
+                    'Tidak ada deskripsi.',
+              ),
               const SizedBox(height: 80),
             ],
           ),
@@ -227,10 +300,7 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     final product = widget.product;
 
     if (ref.read(authProvider).status != AuthStatus.authenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masuk terlebih dahulu untuk menambahkan ke keranjang.')),
-      );
-      context.push('/login');
+      await _showLoginRequiredDialog();
       return;
     }
 
@@ -248,18 +318,56 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     await _addToCart(variantId: null, stock: product.stock);
   }
 
-  Future<void> _addToCart({required String? variantId, required int stock}) async {
+  Future<void> _showLoginRequiredDialog() async {
+    final destination = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Masuk ke Akun Anda'),
+        content: const Text(
+          'Untuk menambahkan produk ke keranjang dan melanjutkan belanja, silahkan masuk atau daftar terlebih dahulu.',
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop('/account/register'),
+                  child: const Text('Daftar'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop('/account/login'),
+                  child: const Text('Masuk'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (destination == null || !mounted) return;
+    context.push(destination);
+  }
+
+  Future<void> _addToCart({
+    required String? variantId,
+    required int stock,
+  }) async {
     if (stock <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Stok habis.')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Stok habis.')));
       return;
     }
 
     setState(() => _adding = true);
 
-    final success = await ref.read(cartProvider.notifier).addItem(
-          productId: widget.product.id,
-          variantId: variantId,
-        );
+    final success = await ref
+        .read(cartProvider.notifier)
+        .addItem(productId: widget.product.id, variantId: variantId);
     if (!mounted) return;
     setState(() => _adding = false);
 
@@ -278,7 +386,11 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ref.read(cartProvider).error ?? 'Gagal menambahkan ke keranjang.')),
+        SnackBar(
+          content: Text(
+            ref.read(cartProvider).error ?? 'Gagal menambahkan ke keranjang.',
+          ),
+        ),
       );
     }
   }
@@ -309,7 +421,10 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
                     ? const SizedBox(
                         height: 16,
                         width: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Icon(Icons.add_shopping_cart_outlined, size: 18),
                 label: const Text('Tambah ke Keranjang'),
@@ -336,15 +451,22 @@ class _VariantPickerSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Pilih Varian', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              'Pilih Varian',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
             for (final variant in variants)
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(variant.name),
-                subtitle: Text('${formatCurrency(variant.price)} · Stok ${variant.stock}'),
+                subtitle: Text(
+                  '${formatCurrency(variant.price)} · Stok ${variant.stock}',
+                ),
                 enabled: variant.stock > 0,
-                onTap: variant.stock > 0 ? () => Navigator.of(context).pop(variant) : null,
+                onTap: variant.stock > 0
+                    ? () => Navigator.of(context).pop(variant)
+                    : null,
               ),
           ],
         ),

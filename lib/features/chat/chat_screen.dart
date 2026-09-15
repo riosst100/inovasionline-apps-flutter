@@ -462,14 +462,14 @@ class _GuestGlobalPreviewView extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => context.push('/register'),
+                          onPressed: () => context.push('/account/register'),
                           child: const Text('Daftar'),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => context.push('/login'),
+                          onPressed: () => context.push('/account/login'),
                           child: const Text('Masuk'),
                         ),
                       ),
@@ -530,7 +530,8 @@ class _GuestGlobalMessagesScreen extends ConsumerWidget {
                                 vertical: 10,
                               ),
                               constraints: BoxConstraints(
-                                maxWidth: MediaQuery.sizeOf(context).width * 0.75,
+                                maxWidth:
+                                    MediaQuery.sizeOf(context).width * 0.75,
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.surface,

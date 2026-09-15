@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../providers/auth_provider.dart';
 import '../home/welcome_message.dart';
 import 'edit_profile_screen.dart';
@@ -22,7 +23,10 @@ class AccountScreen extends ConsumerWidget {
             children: [
               const Text('Anda belum masuk.'),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => context.push('/login'), child: const Text('Masuk')),
+              ElevatedButton(
+                onPressed: () => context.push('/account/login'),
+                child: const Text('Masuk'),
+              ),
             ],
           ),
         ),
@@ -37,12 +41,24 @@ class AccountScreen extends ConsumerWidget {
           CircleAvatar(
             radius: 36,
             backgroundColor: const Color(0xFFF3F4F6),
-            backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-            child: user.avatarUrl == null ? const Icon(Icons.person_outline, size: 36) : null,
+            backgroundImage: user.avatarUrl != null
+                ? NetworkImage(user.avatarUrl!)
+                : null,
+            child: user.avatarUrl == null
+                ? const Icon(Icons.person_outline, size: 36)
+                : null,
           ),
           const SizedBox(height: 12),
-          Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-          Text(user.email, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
+          Text(
+            user.name,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            user.email ?? user.phone ?? '',
+            style: const TextStyle(color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           Center(
             child: OutlinedButton.icon(
@@ -81,7 +97,10 @@ class AccountScreen extends ConsumerWidget {
             onPressed: () async {
               final name = user.name;
               await ref.read(authProvider.notifier).logout();
-              ref.read(pendingWelcomeProvider.notifier).state = WelcomeMessage(name: name, type: WelcomeType.logout);
+              ref.read(pendingWelcomeProvider.notifier).state = WelcomeMessage(
+                name: name,
+                type: WelcomeType.logout,
+              );
               if (context.mounted) context.go('/');
             },
             icon: const Icon(Icons.logout),

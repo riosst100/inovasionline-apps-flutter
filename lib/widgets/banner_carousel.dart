@@ -174,7 +174,7 @@ class _BannerPreviewDialogState extends State<_BannerPreviewDialog> {
   }
 
   Future<void> _share() async {
-    await Share.share(_currentUrl);
+    await SharePlus.instance.share(ShareParams(uri: Uri.parse(_currentUrl)));
   }
 
   String get _hostLabel {
