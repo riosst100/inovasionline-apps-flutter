@@ -7,10 +7,11 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'config/router.dart';
 import 'config/theme.dart';
+import 'features/shell/notification_permission_gate.dart';
 import 'firebase_options.dart';
 import 'services/push_notification_handler.dart';
 
-Future<void> bootstrap({required String envFile}) async {
+Future<void> bootstrap({required String envFile, required bool isDev}) async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: envFile);
   await initializeDateFormatting('id_ID');
@@ -18,7 +19,9 @@ Future<void> bootstrap({required String envFile}) async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform(isDev: isDev),
+  );
 
   final container = ProviderContainer();
   await PushNotificationHandler(container).initialize();
@@ -32,7 +35,7 @@ Future<void> bootstrap({required String envFile}) async {
 }
 
 Future<void> main() async {
-  await bootstrap(envFile: '.env');
+  await bootstrap(envFile: '.env', isDev: false);
 }
 
 class InovasiOnlineApp extends StatelessWidget {
@@ -45,6 +48,8 @@ class InovasiOnlineApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       routerConfig: router,
+      builder: (context, child) =>
+          NotificationPermissionGate(child: child ?? const SizedBox.shrink()),
     );
   }
 }

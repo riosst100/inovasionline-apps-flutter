@@ -300,14 +300,7 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     final product = widget.product;
 
     if (ref.read(authProvider).status != AuthStatus.authenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Masuk terlebih dahulu untuk menambahkan ke keranjang.',
-          ),
-        ),
-      );
-      context.push('/account/login');
+      await _showLoginRequiredDialog();
       return;
     }
 
@@ -323,6 +316,41 @@ class _AddToCartBarState extends ConsumerState<_AddToCartBar> {
     }
 
     await _addToCart(variantId: null, stock: product.stock);
+  }
+
+  Future<void> _showLoginRequiredDialog() async {
+    final destination = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Masuk ke Akun Anda'),
+        content: const Text(
+          'Untuk menambahkan produk ke keranjang dan melanjutkan belanja, silahkan masuk atau daftar terlebih dahulu.',
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop('/account/register'),
+                  child: const Text('Daftar'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop('/account/login'),
+                  child: const Text('Masuk'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (destination == null || !mounted) return;
+    context.push(destination);
   }
 
   Future<void> _addToCart({

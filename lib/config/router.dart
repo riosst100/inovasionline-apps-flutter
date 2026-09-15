@@ -53,24 +53,22 @@ final router = GoRouter(
             GoRoute(
               path: '/account',
               builder: (context, state) => const AccountScreen(),
-              routes: [
-                GoRoute(
-                  path: 'login',
-                  builder: (context, state) => const LoginScreen(),
-                ),
-                GoRoute(
-                  path: 'register',
-                  builder: (context, state) => const RegisterScreen(),
-                ),
-                GoRoute(
-                  path: 'forgot-password',
-                  builder: (context, state) => const ForgotPasswordScreen(),
-                ),
-              ],
             ),
           ],
         ),
       ],
+    ),
+    GoRoute(
+      path: '/account/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/account/register',
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/account/forgot-password',
+      builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
       path: '/complete-address',

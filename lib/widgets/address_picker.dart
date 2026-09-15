@@ -20,9 +20,10 @@ class AddressSelection {
 }
 
 class AddressPicker extends ConsumerStatefulWidget {
-  const AddressPicker({super.key, required this.onChanged});
+  const AddressPicker({super.key, required this.onChanged, this.initial});
 
   final ValueChanged<AddressSelection> onChanged;
+  final AddressSelection? initial;
 
   @override
   ConsumerState<AddressPicker> createState() => _AddressPickerState();
@@ -44,10 +45,14 @@ class _AddressPickerState extends ConsumerState<AddressPicker> {
   @override
   void initState() {
     super.initState();
-    _loadProvinces();
+    _province = widget.initial?.province;
+    _city = widget.initial?.city;
+    _district = widget.initial?.district;
+    _village = widget.initial?.village;
+    _loadInitial();
   }
 
-  Future<void> _loadProvinces() async {
+  Future<void> _loadInitial() async {
     try {
       final provinces = await ref.read(regionServiceProvider).provinces();
       if (!mounted) return;
@@ -55,6 +60,22 @@ class _AddressPickerState extends ConsumerState<AddressPicker> {
         _provinces = provinces;
         _loadingProvinces = false;
       });
+
+      if (_province != null) {
+        final cities = await ref.read(regionServiceProvider).cities(_province!.code);
+        if (!mounted) return;
+        setState(() => _cities = cities);
+      }
+      if (_city != null) {
+        final districts = await ref.read(regionServiceProvider).districts(_city!.code);
+        if (!mounted) return;
+        setState(() => _districts = districts);
+      }
+      if (_district != null) {
+        final villages = await ref.read(regionServiceProvider).villages(_district!.code);
+        if (!mounted) return;
+        setState(() => _villages = villages);
+      }
     } catch (_) {
       if (mounted) setState(() => _loadingProvinces = false);
     }
