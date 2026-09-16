@@ -80,21 +80,21 @@ flutter_launcher_icons:
   image_path: "assets/images/logo_white_bg.png"
   min_sdk_android: 21
   remove_alpha_ios: true
-  background_color_ios: "#FFFFFF"
-  adaptive_icon_background: "#FFFFFF"
+  background_color_ios: "#0F9B8E"
+  adaptive_icon_background: "#0F9B8E"
   adaptive_icon_foreground: "assets/images/logo.png"
   web:
     generate: true
     image_path: "assets/images/logo_white_bg.png"
-    background_color: "#FFFFFF"
-    theme_color: "#FFFFFF"
+    background_color: "#0F9B8E"
+    theme_color: "#0F9B8E"
 
 flutter_native_splash:
-  color: "#FFFFFF"
-  image: "assets/images/logo.png"
+  color: "#0F9B8E"
+  image: "assets/images/logo_splash.png"
   android_12:
-    image: "assets/images/logo.png"
-    color: "#FFFFFF"
+    image: "assets/images/logo_splash_android12.png"
+    color: "#0F9B8E"
   web: false
 
 # For information on the generic Dart part of this file, see the
@@ -112,7 +112,8 @@ flutter:
     - .env
     - .env.dev
     - .env.prod
-    - assets/images/logo.png
+    - assets/images/logo_app.png
+    - assets/images/logo_mark.png
     - assets/images/logo_google.webp
 
   # To add assets to your application, add an assets section, like this:

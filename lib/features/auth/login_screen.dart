@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 32),
-                  Image.asset('assets/images/logo.png', height: 80),
+                  Image.asset('assets/images/logo_app.png', height: 80),
                   const SizedBox(height: 16),
                   Text(
                     'Masuk',

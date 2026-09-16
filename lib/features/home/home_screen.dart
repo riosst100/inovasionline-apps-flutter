@@ -272,12 +272,12 @@ class _HomeHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Image.asset(
-                    'assets/images/logo.png',
-                    height: 40,
-                    width: 40,
+                    'assets/images/logo_mark.png',
+                    height: 28,
+                    width: 28,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: InkWell(
                       onTap: () => context.push('/search'),
@@ -305,10 +305,12 @@ class _HomeHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   IconButton(
                     icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
                     onPressed: () => context.push('/cart'),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
