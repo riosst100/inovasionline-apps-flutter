@@ -14,6 +14,8 @@ import '../features/home/home_screen.dart';
 import '../features/orders/order_detail_screen.dart';
 import '../features/orders/order_list_screen.dart';
 import '../features/posts/posts_screen.dart';
+import '../features/potocandid/potocandid_landing_screen.dart';
+import '../features/potocandid/selfie_upload_screen.dart';
 import '../features/products/product_detail_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/shell/main_shell.dart';
@@ -110,6 +112,14 @@ final router = GoRouter(
       path: '/orders/:id',
       builder: (context, state) =>
           OrderDetailScreen(orderId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/potocandid',
+      builder: (context, state) => const PotoCandidLandingScreen(),
+    ),
+    GoRoute(
+      path: '/potocandid/selfie',
+      builder: (context, state) => const SelfieUploadScreen(),
     ),
   ],
 );

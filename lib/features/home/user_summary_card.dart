@@ -41,12 +41,19 @@ class UserSummaryCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
       child: InkWell(
         onTap: () => context.push(isLoggedIn ? '/account' : '/account/login'),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.foreground.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
